@@ -7,12 +7,13 @@ namespace UrlShortener.Infrastructure
 {
     public class UrlShortenerDbContext : IdentityDbContext<IdentityUser>
     {
+        public DbSet<ShortUrl> ShortUrls { get; set; } = null!;
+        public DbSet<AboutInfo> AboutInfos { get; set; } = null!;
+
         public UrlShortenerDbContext(DbContextOptions<UrlShortenerDbContext> options)
             : base(options)
         {
         }
-
-        public DbSet<ShortUrl> ShortUrls { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,6 +28,12 @@ namespace UrlShortener.Infrastructure
             modelBuilder.Entity<ShortUrl>()
                 .HasIndex(s => s.ShortCode)
                 .IsUnique();
+
+            modelBuilder.Entity<AboutInfo>()
+                .HasOne<IdentityUser>()
+                .WithMany()
+                .HasForeignKey(a => a.UpdatedById)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 
