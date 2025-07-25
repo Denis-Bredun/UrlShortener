@@ -1,11 +1,15 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Text;
+using UrlShortener.Application.Validation;
 using UrlShortener.Infrastructure;
 
 namespace UrlShortener.API
@@ -18,6 +22,7 @@ namespace UrlShortener.API
 
             ConfigureLogging();
             ConfigureServices(builder);
+            ConfigureApiBehavior(builder);
 
             var app = builder.Build();
 
@@ -103,8 +108,32 @@ namespace UrlShortener.API
                 });
             });
 
+            builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
+            builder.Services.AddValidatorsFromAssemblyContaining<LoginDtoValidator>();
+            builder.Services.AddFluentValidationAutoValidation();
+
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
+        }
+
+        private static void ConfigureApiBehavior(WebApplicationBuilder builder)
+        {
+            builder.Services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    var errors = context.ModelState
+                        .Where(e => e.Value.Errors.Count > 0)
+                        .Select(e => new
+                        {
+                            Field = e.Key,
+                            Errors = e.Value.Errors.Select(x => x.ErrorMessage)
+                        });
+
+                    return new BadRequestObjectResult(new { errors });
+                };
+            });
+
         }
 
         private static void ConfigureMiddleware(WebApplication app)
