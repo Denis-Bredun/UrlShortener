@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Identity;
 
 namespace UrlShortener.Domain.Entities
 {
@@ -13,5 +9,7 @@ namespace UrlShortener.Domain.Entities
         public string ShortCode { get; set; } = null!;
         public string CreatedByUserId { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
+
+        public IdentityUser? CreatedByUser { get; set; }
     }
 }

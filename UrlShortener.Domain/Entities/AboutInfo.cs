@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,5 +13,7 @@ namespace UrlShortener.Domain.Entities
         public string Description { get; set; } = null!;
         public DateTime LastUpdated { get; set; }
         public string UpdatedById { get; set; } = null!;
+
+        public IdentityUser? UpdatedByUser { get; set; }
     }
 }

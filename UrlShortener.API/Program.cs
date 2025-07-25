@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -15,6 +16,8 @@ using UrlShortener.Application.Validation;
 using UrlShortener.Infrastructure;
 using UrlShortener.Infrastructure.Decorators;
 using UrlShortener.Infrastructure.Services;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
+using Newtonsoft.Json;
 
 namespace UrlShortener.API
 {
@@ -116,6 +119,8 @@ namespace UrlShortener.API
 
             builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
             builder.Services.AddValidatorsFromAssemblyContaining<LoginDtoValidator>();
+            builder.Services.AddValidatorsFromAssemblyContaining<CreateShortUrlDtoValidator>();
+
             builder.Services.AddFluentValidationAutoValidation();
 
             builder.Services.AddTransient<IIdentitySeeder, IdentitySeeder>();
@@ -124,7 +129,16 @@ namespace UrlShortener.API
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.Decorate<IAuthService, LoggingAuthServiceDecorator>();
 
-            builder.Services.AddControllers();
+            builder.Services.AddScoped<IShortCodeGenerator, ShortCodeGenerator>();
+            builder.Services.AddScoped<IShortUrlService, ShortUrlService>();
+            builder.Services.Decorate<IShortUrlService, LoggingShortUrlServiceDecorator>();
+
+            builder.Services
+                .AddControllers()
+                .AddNewtonsoftJson(options =>
+                {
+                    options.SerializerSettings.TypeNameHandling = TypeNameHandling.Auto;
+                });
             builder.Services.AddEndpointsApiExplorer();
         }
 
@@ -153,7 +167,7 @@ namespace UrlShortener.API
             using var scope = app.Services.CreateScope();
             var seeder = scope.ServiceProvider.GetRequiredService<IIdentitySeeder>();
             await seeder.SeedRolesAsync();
-            await seeder.SeedAdminUserAsync("admin.email@gmail.com", "sUpEr$ecret123");
+            await seeder.SeedAdminUserAsync("adminpanel@gmail.com", "sUpEr$ecret123", "Admin");
         }
 
         private static void ConfigureMiddleware(WebApplication app)

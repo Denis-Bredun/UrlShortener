@@ -31,12 +31,47 @@ namespace UrlShortener.API.Middlewares
                 _logger.LogError(ex, "Invalid login attempt");
                 context.Response.StatusCode = 401;
                 context.Response.ContentType = "application/json";
-                await context.Response.WriteAsJsonAsync(new { error = "Invalid credentials" });
+                await context.Response.WriteAsJsonAsync(new { error = "Invalid email or password." });
             }
             catch (UserNotFoundException ex)
             {
                 _logger.LogError(ex, "User not found");
                 context.Response.StatusCode = 404;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new { error = "User not found." });
+            }
+            catch (ShortUrlNotFoundException ex)
+            {
+                _logger.LogError(ex, "Short URL not found");
+                context.Response.StatusCode = 404;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new { error = "Short URL not found." });
+            }
+            catch (ShortUrlForbiddenDeletionException ex)
+            {
+                _logger.LogError(ex, "Forbidden deletion attempt");
+                context.Response.StatusCode = 403;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new { error = "You can only delete your own short URLs." });
+            }
+            catch (ShortUrlCreationConflictException ex)
+            {
+                _logger.LogError(ex, "Short URL creation conflict");
+                context.Response.StatusCode = 409;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new { error = "This URL already exists." });
+            }
+            catch (ShortCodeGenerationException ex)
+            {
+                _logger.LogError(ex, "Short code generation failed");
+                context.Response.StatusCode = 500;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new { error = "Unable to generate unique short code after multiple attempts." });
+            }
+            catch (ShortCodeEmptyException ex)
+            {
+                _logger.LogWarning(ex, "Empty short code passed");
+                context.Response.StatusCode = 400;
                 context.Response.ContentType = "application/json";
                 await context.Response.WriteAsJsonAsync(new { error = ex.Message });
             }

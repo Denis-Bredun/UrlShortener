@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace UrlShortener.Application.Abstractions
 {
-    public interface IIdentitySeeder
+    public interface IShortCodeGenerator
     {
-        Task SeedRolesAsync();
-        Task SeedAdminUserAsync(string email, string password, string username);
+        Task<string> GenerateUniqueCodeAsync(int length = 8);
     }
 }

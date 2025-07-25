@@ -37,7 +37,7 @@ namespace UrlShortener.Infrastructure.Services
             }
         }
 
-        public async Task SeedAdminUserAsync(string email, string password)
+        public async Task SeedAdminUserAsync(string email, string password, string username)
         {
             var existingUser = await _userManager.FindByEmailAsync(email);
             if (existingUser != null)
@@ -45,7 +45,7 @@ namespace UrlShortener.Infrastructure.Services
 
             var adminUser = new IdentityUser
             {
-                UserName = email,
+                UserName = username,
                 Email = email,
                 EmailConfirmed = true
             };

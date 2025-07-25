@@ -34,12 +34,12 @@ namespace UrlShortener.Infrastructure.Decorators
             }
         }
 
-        public async Task SeedAdminUserAsync(string email, string password)
+        public async Task SeedAdminUserAsync(string email, string password, string username)
         {
             _logger.LogInformation("Starting admin user seeding for {Email}...", email);
             try
             {
-                await _inner.SeedAdminUserAsync(email, password);
+                await _inner.SeedAdminUserAsync(email, password, username);
                 _logger.LogInformation("Admin user seeding for {Email} completed successfully.", email);
             }
             catch (Exception ex)
