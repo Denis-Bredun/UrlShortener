@@ -33,6 +33,10 @@ namespace UrlShortener.Application.Mapping
                 CreatedAt = entity.CreatedAt
             };
         }
-    }
 
+        public static AboutDto AboutEntityToDto(AboutInfo entity)
+        {
+            return new AboutDto(entity.Description, entity.LastUpdated, entity.UpdatedByUser?.UserName ?? "Unknown");
+        }
+    }
 }

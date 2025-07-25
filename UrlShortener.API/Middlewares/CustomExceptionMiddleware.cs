@@ -40,6 +40,13 @@ namespace UrlShortener.API.Middlewares
                 context.Response.ContentType = "application/json";
                 await context.Response.WriteAsJsonAsync(new { error = "User not found." });
             }
+            catch (AdminNotFoundException ex)
+            {
+                _logger.LogError(ex, "Admin not found");
+                context.Response.StatusCode = 404;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new { error = "Admin not found." });
+            }
             catch (ShortUrlNotFoundException ex)
             {
                 _logger.LogError(ex, "Short URL not found");
@@ -72,6 +79,13 @@ namespace UrlShortener.API.Middlewares
             {
                 _logger.LogWarning(ex, "Empty short code passed");
                 context.Response.StatusCode = 400;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new { error = ex.Message });
+            }
+            catch (AboutInfoNotFoundException ex)
+            {
+                _logger.LogError(ex, "About info not found");
+                context.Response.StatusCode = 404;
                 context.Response.ContentType = "application/json";
                 await context.Response.WriteAsJsonAsync(new { error = ex.Message });
             }

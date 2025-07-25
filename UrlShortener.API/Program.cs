@@ -120,11 +120,16 @@ namespace UrlShortener.API
             builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
             builder.Services.AddValidatorsFromAssemblyContaining<LoginDtoValidator>();
             builder.Services.AddValidatorsFromAssemblyContaining<CreateShortUrlDtoValidator>();
+            builder.Services.AddValidatorsFromAssemblyContaining<UpdateAboutDtoValidator>();
 
             builder.Services.AddFluentValidationAutoValidation();
 
             builder.Services.AddTransient<IIdentitySeeder, IdentitySeeder>();
             builder.Services.Decorate<IIdentitySeeder, LoggingIdentitySeederDecorator>();
+
+            builder.Services.AddScoped<IAboutInfoSeeder, AboutInfoSeeder>();
+            builder.Services.Decorate<IAboutInfoSeeder, LoggingAboutInfoSeederDecorator>();
+
 
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.Decorate<IAuthService, LoggingAuthServiceDecorator>();
@@ -132,6 +137,9 @@ namespace UrlShortener.API
             builder.Services.AddScoped<IShortCodeGenerator, ShortCodeGenerator>();
             builder.Services.AddScoped<IShortUrlService, ShortUrlService>();
             builder.Services.Decorate<IShortUrlService, LoggingShortUrlServiceDecorator>();
+
+            builder.Services.AddScoped<IAboutService, AboutService>();
+            builder.Services.Decorate<IAboutService, LoggingAboutServiceDecorator>();
 
             builder.Services
                 .AddControllers()
@@ -164,10 +172,19 @@ namespace UrlShortener.API
 
         public static async Task SeedIdentityDataAsync(WebApplication app)
         {
+            const string adminEmail = "adminpanel@gmail.com";
+            const string adminPassword = "sUpEr$ecret123";
+            const string adminUsername = "Admin";
+
             using var scope = app.Services.CreateScope();
-            var seeder = scope.ServiceProvider.GetRequiredService<IIdentitySeeder>();
+            var services = scope.ServiceProvider;
+
+            var seeder = services.GetRequiredService<IIdentitySeeder>();
             await seeder.SeedRolesAsync();
-            await seeder.SeedAdminUserAsync("adminpanel@gmail.com", "sUpEr$ecret123", "Admin");
+            await seeder.SeedAdminUserAsync(adminEmail, adminPassword, adminUsername);
+
+            var aboutSeeder = services.GetRequiredService<IAboutInfoSeeder>();
+            await aboutSeeder.SeedAsync(adminEmail);
         }
 
         private static void ConfigureMiddleware(WebApplication app)

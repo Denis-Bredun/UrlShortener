@@ -9,15 +9,8 @@ namespace UrlShortener.API.Controllers
 {
     [Route("api/urls")]
     [ApiController]
-    public class UrlsController : ControllerBase
+    public class UrlsController(IShortUrlService shortUrlService) : ControllerBase
     {
-        private readonly IShortUrlService _shortUrlService;
-
-        public UrlsController(IShortUrlService shortUrlService)
-        {
-            _shortUrlService = shortUrlService;
-        }
-
         /// <summary>
         /// Gets all short URLs.
         /// Accessible to all users, including anonymous.
@@ -26,7 +19,7 @@ namespace UrlShortener.API.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
-            var urls = await _shortUrlService.GetAllAsync(User.Identity?.IsAuthenticated);
+            var urls = await shortUrlService.GetAllAsync(User.Identity?.IsAuthenticated);
             return Ok(urls);
         }
 
@@ -39,7 +32,7 @@ namespace UrlShortener.API.Controllers
         [Authorize]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var url = await _shortUrlService.GetByIdAsync(id);
+            var url = await shortUrlService.GetByIdAsync(id);
             return Ok(url);
         }
 
@@ -53,7 +46,7 @@ namespace UrlShortener.API.Controllers
         public async Task<IActionResult> Create([FromBody] CreateShortUrlDto dto)
         {
             var userId = User.Identity!.GetUserId();
-            var newUrlId = await _shortUrlService.CreateShortUrlAsync(dto, userId);
+            var newUrlId = await shortUrlService.CreateShortUrlAsync(dto, userId);
             return Ok(newUrlId);
         }
 
@@ -69,7 +62,7 @@ namespace UrlShortener.API.Controllers
         {
             var userId = User.Identity!.GetUserId();
             var isAdmin = User.IsInRole("Admin");
-            await _shortUrlService.DeleteAsync(id, userId, isAdmin);
+            await shortUrlService.DeleteAsync(id, userId, isAdmin);
             return Ok();
         }
     }

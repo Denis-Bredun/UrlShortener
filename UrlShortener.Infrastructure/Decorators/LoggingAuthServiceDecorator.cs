@@ -10,55 +10,48 @@ using UrlShortener.Application.DTOs;
 
 namespace UrlShortener.Infrastructure.Decorators
 {
-    public class LoggingAuthServiceDecorator : IAuthService
+    public class LoggingAuthServiceDecorator(
+        IAuthService inner, 
+        ILogger<LoggingAuthServiceDecorator> logger) : IAuthService
     {
-        private readonly IAuthService _inner;
-        private readonly ILogger<LoggingAuthServiceDecorator> _logger;
-
-        public LoggingAuthServiceDecorator(IAuthService inner, ILogger<LoggingAuthServiceDecorator> logger)
-        {
-            _inner = inner;
-            _logger = logger;
-        }
-
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
         {
-            _logger.LogInformation("Register attempt for {Email}", dto.Email);
+            logger.LogInformation("Register attempt for {Email}", dto.Email);
             try
             {
-                return await _inner.RegisterAsync(dto);
+                return await inner.RegisterAsync(dto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Registration failed for {Email}", dto.Email);
+                logger.LogError(ex, "Registration failed for {Email}", dto.Email);
                 throw;
             }
         }
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto dto)
         {
-            _logger.LogInformation("Login attempt for {Email}", dto.Email);
+            logger.LogInformation("Login attempt for {Email}", dto.Email);
             try
             {
-                return await _inner.LoginAsync(dto);
+                return await inner.LoginAsync(dto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Login failed for {Email}", dto.Email);
+                logger.LogError(ex, "Login failed for {Email}", dto.Email);
                 throw;
             }
         }
 
         public async Task<UserInfoDto> GetCurrentUserAsync(ClaimsPrincipal userPrincipal)
         {
-            _logger.LogInformation("Fetching current user info");
+            logger.LogInformation("Fetching current user info");
             try
             {
-                return await _inner.GetCurrentUserAsync(userPrincipal);
+                return await inner.GetCurrentUserAsync(userPrincipal);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to fetch current user info");
+                logger.LogError(ex, "Failed to fetch current user info");
                 throw;
             }
         }

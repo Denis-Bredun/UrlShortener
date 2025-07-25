@@ -14,29 +14,18 @@ using UrlShortener.Infrastructure.Exceptions;
 
 namespace UrlShortener.Infrastructure.Services
 {
-    public class AuthService : IAuthService
-    {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly IConfiguration _configuration;
-
-        public AuthService(
+    public class AuthService(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
-            IConfiguration configuration)
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _configuration = configuration;
-        }
-
+            IConfiguration configuration) : IAuthService
+    {
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
         {
-            var existingEmail = await _userManager.FindByEmailAsync(dto.Email);
+            var existingEmail = await userManager.FindByEmailAsync(dto.Email);
             if (existingEmail != null)
                 throw new UserCreationException("Email is already taken.");
 
-            var existingUsername = await _userManager.FindByNameAsync(dto.Username);
+            var existingUsername = await userManager.FindByNameAsync(dto.Username);
             if (existingUsername != null)
                 throw new UserCreationException("Username is already taken.");
 
@@ -46,12 +35,12 @@ namespace UrlShortener.Infrastructure.Services
                 Email = dto.Email,
             };
 
-            var result = await _userManager.CreateAsync(user, dto.Password);
+            var result = await userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
                 throw new UserCreationException(string.Join("; ", result.Errors));
 
             var role = "User";
-            var addRoleResult = await _userManager.AddToRoleAsync(user, role);
+            var addRoleResult = await userManager.AddToRoleAsync(user, role);
 
             if (!addRoleResult.Succeeded)
                 throw new RoleAssignmentException(string.Join("; ", addRoleResult.Errors));
@@ -63,15 +52,15 @@ namespace UrlShortener.Infrastructure.Services
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto dto)
         {
-            var user = await _userManager.FindByEmailAsync(dto.Email);
+            var user = await userManager.FindByEmailAsync(dto.Email);
             if (user == null)
                 throw new InvalidCredentialsException();
 
-            var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
+            var result = await signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
             if (!result.Succeeded)
                 throw new InvalidCredentialsException();
 
-            var roles = await _userManager.GetRolesAsync(user);
+            var roles = await userManager.GetRolesAsync(user);
             var role = roles.FirstOrDefault("User");
 
             var token = await GenerateJwtTokenAsync(user);
@@ -85,11 +74,11 @@ namespace UrlShortener.Infrastructure.Services
             if (userId == null)
                 throw new InvalidCredentialsException();
 
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await userManager.FindByIdAsync(userId);
             if (user == null)
                 throw new UserNotFoundException();
 
-            var roles = await _userManager.GetRolesAsync(user);
+            var roles = await userManager.GetRolesAsync(user);
             var role = roles.FirstOrDefault("User");
 
             return new UserInfoDto(user.Id, user.Email, user.UserName, role);
@@ -97,7 +86,7 @@ namespace UrlShortener.Infrastructure.Services
 
         private async Task<string> GenerateJwtTokenAsync(IdentityUser user)
         {
-            var roles = await _userManager.GetRolesAsync(user);
+            var roles = await userManager.GetRolesAsync(user);
 
             var claims = new List<Claim>
         {
@@ -112,14 +101,14 @@ namespace UrlShortener.Infrastructure.Services
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var expires = DateTime.UtcNow.AddDays(7);
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
+                issuer: configuration["Jwt:Issuer"],
+                audience: configuration["Jwt:Audience"],
                 claims: claims,
                 expires: expires,
                 signingCredentials: creds

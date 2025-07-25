@@ -16,6 +16,11 @@ namespace UrlShortener.Infrastructure.Exceptions
         public UserNotFoundException() : base("User not found.") { }
     }
 
+    public class AdminNotFoundException : AuthException
+    {
+        public AdminNotFoundException() : base("Admin not found.") { }
+    }
+
     public class InvalidCredentialsException : AuthException
     {
         public InvalidCredentialsException() : base("Invalid email or password.") { }

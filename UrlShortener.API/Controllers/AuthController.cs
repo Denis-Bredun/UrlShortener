@@ -8,15 +8,8 @@ namespace UrlShortener.API.Controllers
 {
     [Route("api/auth")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController(IAuthService authService) : ControllerBase
     {
-        private readonly IAuthService _authService;
-
-        public AuthController(IAuthService authService)
-        {
-            _authService = authService;
-        }
-
         /// <summary>
         /// Registers a new user account.
         /// </summary>
@@ -25,7 +18,7 @@ namespace UrlShortener.API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
-            var result = await _authService.RegisterAsync(dto);
+            var result = await authService.RegisterAsync(dto);
             return Ok(result);
         }
 
@@ -37,7 +30,7 @@ namespace UrlShortener.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            var result = await _authService.LoginAsync(dto);
+            var result = await authService.LoginAsync(dto);
             return Ok(result);
         }
 
@@ -49,7 +42,7 @@ namespace UrlShortener.API.Controllers
         [HttpGet("me")]
         public async Task<IActionResult> Me()
         {
-            var userInfo = await _authService.GetCurrentUserAsync(User);
+            var userInfo = await authService.GetCurrentUserAsync(User);
             return Ok(userInfo);
         }
     }

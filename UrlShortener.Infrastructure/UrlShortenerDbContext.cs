@@ -36,5 +36,4 @@ namespace UrlShortener.Infrastructure
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
-
 }

@@ -9,28 +9,19 @@ using UrlShortener.Infrastructure.Exceptions;
 
 namespace UrlShortener.Infrastructure.Services
 {  
-    public class IdentitySeeder : IIdentitySeeder
-    {
-        private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly UserManager<IdentityUser> _userManager;
-
-        public IdentitySeeder(
+    public class IdentitySeeder(
             RoleManager<IdentityRole> roleManager,
-            UserManager<IdentityUser> userManager)
-        {
-            _roleManager = roleManager;
-            _userManager = userManager;
-        }
-
+            UserManager<IdentityUser> userManager) : IIdentitySeeder
+    {
         public async Task SeedRolesAsync()
         {
             string[] roles = { "User", "Admin" };
 
             foreach (var role in roles)
             {
-                if (!await _roleManager.RoleExistsAsync(role))
+                if (!await roleManager.RoleExistsAsync(role))
                 {
-                    var result = await _roleManager.CreateAsync(new IdentityRole(role));
+                    var result = await roleManager.CreateAsync(new IdentityRole(role));
                     if (!result.Succeeded)
                         throw new RoleCreationException(string.Join("; ", result.Errors));
                 }
@@ -39,7 +30,7 @@ namespace UrlShortener.Infrastructure.Services
 
         public async Task SeedAdminUserAsync(string email, string password, string username)
         {
-            var existingUser = await _userManager.FindByEmailAsync(email);
+            var existingUser = await userManager.FindByEmailAsync(email);
             if (existingUser != null)
                 return;
 
@@ -50,11 +41,11 @@ namespace UrlShortener.Infrastructure.Services
                 EmailConfirmed = true
             };
 
-            var result = await _userManager.CreateAsync(adminUser, password);
+            var result = await userManager.CreateAsync(adminUser, password);
             if (!result.Succeeded)
                 throw new UserCreationException(string.Join("; ", result.Errors));
 
-            var addRoleResult = await _userManager.AddToRoleAsync(adminUser, "Admin");
+            var addRoleResult = await userManager.AddToRoleAsync(adminUser, "Admin");
             if (!addRoleResult.Succeeded)
                 throw new RoleAssignmentException(string.Join("; ", addRoleResult.Errors));
         }

@@ -7,15 +7,8 @@ namespace UrlShortener.API.Controllers
 {
     [ApiController]
     [Route("/{shortCode}")]
-    public class RedirectController : ControllerBase
+    public class RedirectController(IShortUrlService shortUrlService) : ControllerBase
     {
-        private readonly IShortUrlService _shortUrlService;
-
-        public RedirectController(IShortUrlService shortUrlService)
-        {
-            _shortUrlService = shortUrlService;
-        }
-
         /// <summary>
         /// Redirects to the original URL based on a short code.
         /// Accessible to everyone (even anonymous).
@@ -26,7 +19,7 @@ namespace UrlShortener.API.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> RedirectToOriginal([FromRoute] string shortCode)
         {
-            var originalUrl = await _shortUrlService.GetOriginalUrlByShortCodeAsync(shortCode);
+            var originalUrl = await shortUrlService.GetOriginalUrlByShortCodeAsync(shortCode);
             return RedirectPermanent(originalUrl);
         }
     }
