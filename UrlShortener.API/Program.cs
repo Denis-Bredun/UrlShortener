@@ -9,14 +9,18 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Text;
+using UrlShortener.API.Middlewares;
+using UrlShortener.Application.Abstractions;
 using UrlShortener.Application.Validation;
 using UrlShortener.Infrastructure;
+using UrlShortener.Infrastructure.Decorators;
+using UrlShortener.Infrastructure.Services;
 
 namespace UrlShortener.API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +29,8 @@ namespace UrlShortener.API
             ConfigureApiBehavior(builder);
 
             var app = builder.Build();
+
+            await SeedIdentityDataAsync(app);
 
             ConfigureMiddleware(app);
 
@@ -112,6 +118,12 @@ namespace UrlShortener.API
             builder.Services.AddValidatorsFromAssemblyContaining<LoginDtoValidator>();
             builder.Services.AddFluentValidationAutoValidation();
 
+            builder.Services.AddTransient<IIdentitySeeder, IdentitySeeder>();
+            builder.Services.Decorate<IIdentitySeeder, LoggingIdentitySeederDecorator>();
+
+            builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.Decorate<IAuthService, LoggingAuthServiceDecorator>();
+
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
         }
@@ -136,6 +148,14 @@ namespace UrlShortener.API
 
         }
 
+        public static async Task SeedIdentityDataAsync(WebApplication app)
+        {
+            using var scope = app.Services.CreateScope();
+            var seeder = scope.ServiceProvider.GetRequiredService<IIdentitySeeder>();
+            await seeder.SeedRolesAsync();
+            await seeder.SeedAdminUserAsync("admin.email@gmail.com", "sUpEr$ecret123");
+        }
+
         private static void ConfigureMiddleware(WebApplication app)
         {
             if (app.Environment.IsDevelopment())
@@ -144,17 +164,26 @@ namespace UrlShortener.API
                 app.UseSwaggerUI();
             }
 
-            app.UseExceptionHandler(config =>
+            app.UseMiddleware<CustomExceptionMiddleware>();
+
+            app.UseExceptionHandler(errorApp =>
             {
-                config.Run(async context =>
+                errorApp.Run(async context =>
                 {
+                    var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
+                    var logger = loggerFactory.CreateLogger("GlobalExceptionHandler");
+
                     context.Response.StatusCode = 500;
                     context.Response.ContentType = "application/json";
 
-                    var error = context.Features.Get<IExceptionHandlerPathFeature>();
-                    if (error != null)
+                    var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+                    if (exceptionHandlerFeature != null)
                     {
-                        var response = new { error = error.Error.Message };
+                        var exception = exceptionHandlerFeature.Error;
+
+                        logger.LogError(exception, "Unhandled exception occurred while processing the request");
+
+                        var response = new { error = exception.Message };
                         await context.Response.WriteAsJsonAsync(response);
                     }
                 });

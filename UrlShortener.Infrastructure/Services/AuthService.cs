@@ -10,8 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using UrlShortener.Application.Abstractions;
 using UrlShortener.Application.DTOs;
+using UrlShortener.Infrastructure.Exceptions;
 
-namespace UrlShortener.Application.Implementations
+namespace UrlShortener.Infrastructure.Services
 {
     public class AuthService : IAuthService
     {
@@ -31,18 +32,29 @@ namespace UrlShortener.Application.Implementations
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
         {
+            var existingEmail = await _userManager.FindByEmailAsync(dto.Email);
+            if (existingEmail != null)
+                throw new UserCreationException("Email is already taken.");
+
+            var existingUsername = await _userManager.FindByNameAsync(dto.Username);
+            if (existingUsername != null)
+                throw new UserCreationException("Username is already taken.");
+
             var user = new IdentityUser
             {
-                UserName = dto.Username, 
+                UserName = dto.Username,
                 Email = dto.Email,
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
-                throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));
+                throw new UserCreationException(string.Join("; ", result.Errors));
 
             var role = "User";
-            await _userManager.AddToRoleAsync(user, role);
+            var addRoleResult = await _userManager.AddToRoleAsync(user, role);
+
+            if (!addRoleResult.Succeeded)
+                throw new RoleAssignmentException(string.Join("; ", addRoleResult.Errors));
 
             var token = await GenerateJwtTokenAsync(user);
 
@@ -53,11 +65,11 @@ namespace UrlShortener.Application.Implementations
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
-                throw new UnauthorizedAccessException("Невірний логін або пароль.");
+                throw new InvalidCredentialsException();
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
             if (!result.Succeeded)
-                throw new UnauthorizedAccessException("Невірний логін або пароль.");
+                throw new InvalidCredentialsException();
 
             var roles = await _userManager.GetRolesAsync(user);
             var role = roles.FirstOrDefault("User");
@@ -71,11 +83,11 @@ namespace UrlShortener.Application.Implementations
         {
             var userId = userPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
-                throw new UnauthorizedAccessException("Користувач не авторизований.");
+                throw new InvalidCredentialsException();
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
-                throw new UnauthorizedAccessException("Користувач не знайдений.");
+                throw new UserNotFoundException();
 
             var roles = await _userManager.GetRolesAsync(user);
             var role = roles.FirstOrDefault("User");
@@ -88,12 +100,12 @@ namespace UrlShortener.Application.Implementations
             var roles = await _userManager.GetRolesAsync(user);
 
             var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.UserName ?? ""),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            };
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
+            new Claim(ClaimTypes.Name, user.UserName ?? ""),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        };
 
             foreach (var role in roles)
             {
@@ -116,5 +128,4 @@ namespace UrlShortener.Application.Implementations
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
-
 }

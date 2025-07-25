@@ -11,24 +11,14 @@ namespace UrlShortener.Application.Validation
 {
     public class RegisterDtoValidator : AbstractValidator<RegisterDto>
     {
-        public RegisterDtoValidator(UserManager<IdentityUser> userManager)
+        public RegisterDtoValidator()
         {
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required.")
-                .EmailAddress().WithMessage("Invalid email format.")
-                .MustAsync(async (email, cancellation) =>
-                {
-                    var existingUser = await userManager.FindByEmailAsync(email);
-                    return existingUser == null;
-                }).WithMessage("Email is already taken.");
+                .EmailAddress().WithMessage("Invalid email format.");
 
             RuleFor(x => x.Username)
-                .NotEmpty().WithMessage("Username is required.")
-                .MustAsync(async (username, cancellation) =>
-                {
-                    var existingUser = await userManager.FindByNameAsync(username);
-                    return existingUser == null;
-                }).WithMessage("Username is already taken.");
+                .NotEmpty().WithMessage("Username is required.");
 
             RuleFor(x => x.Password)
                 .NotEmpty().WithMessage("Password is required.")
