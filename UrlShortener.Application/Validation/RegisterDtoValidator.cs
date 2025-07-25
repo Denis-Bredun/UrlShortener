@@ -15,7 +15,12 @@ namespace UrlShortener.Application.Validation
         {
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required.")
-                .EmailAddress().WithMessage("Invalid email format.");
+                .EmailAddress().WithMessage("Invalid email format.")
+                .MustAsync(async (email, cancellation) =>
+                {
+                    var existingUser = await userManager.FindByEmailAsync(email);
+                    return existingUser == null;
+                }).WithMessage("Email is already taken.");
 
             RuleFor(x => x.Username)
                 .NotEmpty().WithMessage("Username is required.")
