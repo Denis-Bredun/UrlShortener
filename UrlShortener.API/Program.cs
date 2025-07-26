@@ -130,6 +130,7 @@ namespace UrlShortener.API
             builder.Services.AddScoped<IAboutInfoSeeder, AboutInfoSeeder>();
             builder.Services.Decorate<IAboutInfoSeeder, LoggingAboutInfoSeederDecorator>();
 
+            builder.Services.AddScoped<IDemoUserSeeder, DemoUserSeeder>();
 
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.Decorate<IAuthService, LoggingAuthServiceDecorator>();
@@ -172,12 +173,17 @@ namespace UrlShortener.API
 
         public static async Task SeedIdentityDataAsync(WebApplication app)
         {
+            using var scope = app.Services.CreateScope();
+            var services = scope.ServiceProvider;
+
+            var dbContext = services.GetRequiredService<UrlShortenerDbContext>();
+
+            await dbContext.Database.EnsureDeletedAsync(); // you may want to comment this line so as not to create the DB and make migrations every time
+            await dbContext.Database.MigrateAsync();
+
             const string adminEmail = "adminpanel@gmail.com";
             const string adminPassword = "sUpEr$ecret123";
             const string adminUsername = "Admin";
-
-            using var scope = app.Services.CreateScope();
-            var services = scope.ServiceProvider;
 
             var seeder = services.GetRequiredService<IIdentitySeeder>();
             await seeder.SeedRolesAsync();
@@ -185,6 +191,9 @@ namespace UrlShortener.API
 
             var aboutSeeder = services.GetRequiredService<IAboutInfoSeeder>();
             await aboutSeeder.SeedAsync(adminEmail);
+
+            var demoSeeder = services.GetRequiredService<IDemoUserSeeder>();
+            await demoSeeder.SeedAsync();
         }
 
         private static void ConfigureMiddleware(WebApplication app)
