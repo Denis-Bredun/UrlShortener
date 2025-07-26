@@ -29,7 +29,7 @@ namespace UrlShortener.API
 
             ConfigureLogging();
             ConfigureServices(builder);
-            ConfigureApiBehavior(builder);
+            ConfigureModelValidationErrorHandling(builder);
 
             var app = builder.Build();
 
@@ -151,7 +151,7 @@ namespace UrlShortener.API
             builder.Services.AddEndpointsApiExplorer();
         }
 
-        private static void ConfigureApiBehavior(WebApplicationBuilder builder)
+        private static void ConfigureModelValidationErrorHandling(WebApplicationBuilder builder)
         {
             builder.Services.Configure<ApiBehaviorOptions>(options =>
             {
@@ -206,28 +206,31 @@ namespace UrlShortener.API
 
             app.UseMiddleware<CustomExceptionMiddleware>();
 
-            app.UseExceptionHandler(errorApp =>
-            {
-                errorApp.Run(async context =>
-                {
-                    var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
-                    var logger = loggerFactory.CreateLogger("GlobalExceptionHandler");
+            // We have CustomExceptionMiddleware, so General Exception Handler
+            // is not necessary
 
-                    context.Response.StatusCode = 500;
-                    context.Response.ContentType = "application/json";
+            //app.UseExceptionHandler(errorApp =>
+            //{
+            //    errorApp.Run(async context =>
+            //    {
+            //        var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
+            //        var logger = loggerFactory.CreateLogger("GlobalExceptionHandler");
 
-                    var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerPathFeature>();
-                    if (exceptionHandlerFeature != null)
-                    {
-                        var exception = exceptionHandlerFeature.Error;
+            //        context.Response.StatusCode = 500;
+            //        context.Response.ContentType = "application/json";
 
-                        logger.LogError(exception, "Unhandled exception occurred while processing the request");
+            //        var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+            //        if (exceptionHandlerFeature != null)
+            //        {
+            //            var exception = exceptionHandlerFeature.Error;
 
-                        var response = new { error = exception.Message };
-                        await context.Response.WriteAsJsonAsync(response);
-                    }
-                });
-            });
+            //            logger.LogError(exception, "Unhandled exception occurred while processing the request");
+
+            //            var response = new { error = exception.Message };
+            //            await context.Response.WriteAsJsonAsync(response);
+            //        }
+            //    });
+            //});
 
             app.UseHttpsRedirection();
             app.UseCors("AllowAngularDevClient");

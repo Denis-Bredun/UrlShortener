@@ -29,7 +29,7 @@ namespace UrlShortener.Infrastructure.Services
 
                         For every attempt, the system checks the database to ensure the generated code is unique.
                         If a unique code is found, it is returned immediately.
-                        If the code already exists, the generator retries—up to 10 attempts in total.
+                        If the code already exists, the generator retries-up to 10 attempts in total.
                         If all 10 attempts fail to produce a unique code, a ShortCodeGenerationException is thrown.
                     """,
                     LastUpdated = DateTime.UtcNow,
