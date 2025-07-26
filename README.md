@@ -4,14 +4,20 @@ A URL shortening service built with ASP.NET Core 8.0, featuring user authenticat
 
 ## Features
 
-- **URL Shortening**: Create short URLs with custom or auto-generated short codes
-- **User Authentication**: JWT-based authentication with ASP.NET Core Identity
-- **User Management**: Register, login, and manage user accounts
-- **About Information**: Manage and display about information
-- **API Documentation**: Swagger/OpenAPI documentation
-- **Logging**: Comprehensive logging with Serilog
-- **Validation**: Input validation using FluentValidation
-- **Clean Architecture**: Layered architecture with Domain, Application, Infrastructure, and API layers
+### Core Functionality
+- **URL Shortening**: Create short URLs with auto-generated secure codes using cryptographic random generation
+- **URL Redirection**: Automatic redirection from short codes to original URLs (accessible to everyone)
+- **URL Management**: View, create, and delete short URLs with role-based permissions
+
+### User System
+- **User Registration**: Create new user accounts with email and password validation
+- **User Authentication**: JWT-based login system with secure token generation
+- **User Profile**: Get current user information and manage account details
+- **Role-Based Access**: Admin and User roles with different permission levels
+
+### Content Management
+- **About Information**: Display and update URL shortening algorithm descriptions
+- **Admin Controls**: Administrators can manage all content and user URLs
 
 ## Prerequisites
 
