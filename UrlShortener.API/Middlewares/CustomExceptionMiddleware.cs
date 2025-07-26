@@ -77,10 +77,17 @@ namespace UrlShortener.API.Middlewares
             }
             catch (ShortCodeEmptyException ex)
             {
-                _logger.LogWarning(ex, "Empty short code passed");
+                _logger.LogError(ex, "Empty short code passed");
                 context.Response.StatusCode = 400;
                 context.Response.ContentType = "application/json";
                 await context.Response.WriteAsJsonAsync(new { error = ex.Message });
+            }
+            catch (ShortCodeInvalidLengthException ex)
+            {
+                _logger.LogError(ex, "Invalid short code length requested");
+                context.Response.StatusCode = 500;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new { error = "Invalid short code length was provided." });
             }
             catch (AboutInfoNotFoundException ex)
             {

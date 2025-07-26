@@ -17,6 +17,9 @@ namespace UrlShortener.Infrastructure.Services
 
         public async Task<string> GenerateUniqueCodeAsync(int length = 8)
         {
+            if (length <= 0)
+                throw new ShortCodeInvalidLengthException(length);
+
             for (int attempt = 0; attempt < 10; attempt++) 
             {
                 var code = GenerateSecureShortCode(length);

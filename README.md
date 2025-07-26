@@ -125,7 +125,19 @@ The application creates a default admin account on startup:
 
 ## Testing
 
-**Note**: Tests were not completed due to time constraints. The test project structure is in place but requires implementation.
+**Note**: Basic test structure has been implemented for the `ShortCodeGenerator` service. Additional tests for other services are planned but not yet completed due to time constraints.
+
+### Implemented Tests
+- **ShortCodeGeneratorTests**: Comprehensive unit tests covering code generation, uniqueness validation, error handling, and edge cases
+- **ShortCodeGeneratorPerformanceTests**: Performance and concurrency tests
+
+### Running Tests
+1. Open Test Explorer in Visual Studio (Test → Test Explorer)
+2. Build the solution
+3. Run tests from Test Explorer or use command line:
+   ```bash
+   dotnet test
+   ```
 
 ## Development Notes
 

@@ -35,4 +35,9 @@ namespace UrlShortener.Infrastructure.Exceptions
     {
         public ShortCodeEmptyException() : base("Empty short code passed.") { }
     }
+
+    public class ShortCodeInvalidLengthException : ShortUrlException
+    {
+        public ShortCodeInvalidLengthException(int length) : base($"Short code length must be greater than 0, but was {length}.") { }
+    }
 }
