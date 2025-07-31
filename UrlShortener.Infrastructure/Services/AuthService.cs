@@ -14,6 +14,11 @@ using UrlShortener.Infrastructure.Exceptions;
 
 namespace UrlShortener.Infrastructure.Services
 {
+    // Recommended: I put it into Infrastructure layer because I use "infrastructure things" here: 
+    // UserManager, SignInManager. But it's use case at the same time.
+    // My Application, Use Case, layer is almost empty, almost useless
+    // I think this project requires some reorganization.
+
     public class AuthService(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,

@@ -8,6 +8,7 @@ using UrlShortener.Application.Abstractions;
 
 namespace UrlShortener.Infrastructure.Decorators
 {
+    // Recommended: decorators might be superfluous
     public class LoggingAboutInfoSeederDecorator(
             IAboutInfoSeeder inner,
             ILogger<LoggingAboutInfoSeederDecorator> logger) : IAboutInfoSeeder

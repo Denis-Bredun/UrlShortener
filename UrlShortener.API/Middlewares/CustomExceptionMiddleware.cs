@@ -13,6 +13,17 @@ namespace UrlShortener.API.Middlewares
             _logger = logger;
         }
 
+        // Recommended: to separate exceptions between controllers?
+
+        // The Result Pattern/"generic Result pattern" is recommended? 
+        // https://medium.com/@aseem2372005/the-result-pattern-in-c-a-smarter-way-to-handle-errors-c6dee28a0ef0
+        // https://www.linkedin.com/pulse/result-pattern-c-comprehensive-guide-andre-baltieri-wieuf/
+        
+        // we may not to want to throw exceptions in services, but to return Generic Result, and we would want
+        // to have general try-catch in Middleware, where in catch we will return Result.Fail(ex.message)
+
+        // exceptions are kinda expensive        
+
         public async Task Invoke(HttpContext context)
         {
             try

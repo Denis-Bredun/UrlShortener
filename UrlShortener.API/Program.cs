@@ -21,6 +21,8 @@ using Newtonsoft.Json;
 
 namespace UrlShortener.API
 {
+    // Recommended: class Program is too big; we shall divide it between layers with extension methods
+
     public class Program
     {
         public static async Task Main(string[] args)
@@ -181,8 +183,8 @@ namespace UrlShortener.API
             await dbContext.Database.EnsureDeletedAsync(); // you may want to comment this line so as not to create the DB and make migrations every time
             await dbContext.Database.MigrateAsync();
 
-            const string adminEmail = "adminpanel@gmail.com";
-            const string adminPassword = "sUpEr$ecret123";
+            const string adminEmail = "adminpanel@gmail.com"; // Recommended: to store in Secrets
+            const string adminPassword = "sUpEr$ecret123";    // https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-9.0&tabs=windows
             const string adminUsername = "Admin";
 
             var seeder = services.GetRequiredService<IIdentitySeeder>();
@@ -201,13 +203,17 @@ namespace UrlShortener.API
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(); // Recommended: scalar ui instead of Swagger
             }
 
             app.UseMiddleware<CustomExceptionMiddleware>();
 
             // We have CustomExceptionMiddleware, so General Exception Handler
             // is not necessary
+
+            // I think it may be useful if we try to use it along with the Result Pattern
+
+            // Recommended
 
             //app.UseExceptionHandler(errorApp =>
             //{

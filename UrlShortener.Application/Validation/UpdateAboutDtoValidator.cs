@@ -6,6 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using UrlShortener.Application.DTOs;
 
+
+// Recommended: namespace; not namespace{}
+
 namespace UrlShortener.Application.Validation
 {
     public class UpdateAboutDtoValidator : AbstractValidator<UpdateAboutDto>

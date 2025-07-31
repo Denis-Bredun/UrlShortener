@@ -17,6 +17,8 @@ namespace UrlShortener.API.Controllers
         /// </summary>
         [HttpGet]
         [AllowAnonymous]
+        // Recommended: we may remove it considering the fact that we don't assign Authorize for the whole class
+        // Recommended: pagination
         public async Task<IActionResult> GetAll()
         {
             var urls = await shortUrlService.GetAllAsync(User.Identity?.IsAuthenticated);
@@ -60,8 +62,8 @@ namespace UrlShortener.API.Controllers
         [Authorize]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var userId = User.Identity!.GetUserId();
-            var isAdmin = User.IsInRole("Admin");
+            var userId = User.Identity!.GetUserId(); // Recommended: to have a separate service for getting Identity, Id, User's role, e.t.c.
+            var isAdmin = User.IsInRole("Admin"); // Recommended: [Authorize(Roles = "Admin")]
             await shortUrlService.DeleteAsync(id, userId, isAdmin);
             return Ok();
         }

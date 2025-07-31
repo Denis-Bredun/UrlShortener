@@ -32,7 +32,8 @@ namespace UrlShortener.API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update([FromBody] UpdateAboutDto dto)
         {
-            var userId = User.Identity!.GetUserId();
+            var userId = User.Identity!.GetUserId(); // Recommended: to have a separate service for getting Identity, Id, User's role, e.t.c.
+                                                     // like AuthContext
             await aboutService.UpdateAboutInfoAsync(dto, userId);
             return Ok();
         }
